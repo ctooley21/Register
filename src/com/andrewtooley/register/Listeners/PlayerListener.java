@@ -5,34 +5,42 @@ import com.andrewtooley.register.Util.IPConfig;
 import com.andrewtooley.register.Util.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener
 {
 
     @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent e)
+    public void onPlayerLogin(PlayerLoginEvent event)
     {
-        final Player p = e.getPlayer();
-        if (IPConfig.hasRegistered(p))
+        final Player player = event.getPlayer();
+        if (IPConfig.hasRegistered(player))
         {
-            if (!IPConfig.checkIP(p, e.getAddress().getHostAddress()))
+            if (!IPConfig.checkIP(player, event.getAddress().getHostAddress()))
             {
                 Bukkit.getScheduler().runTaskLater(Register.getInstance(), new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        p.sendMessage(Message.getMessage("login-required-first"));
+                        player.sendMessage(Message.getMessage("login-required-first"));
                     }
                 }, 20);
             }
             else
             {
-                Register.getInstance().loggedInPlayers.add(p.getUniqueId());
+                Register.getInstance().loggedInPlayers.add(player.getUniqueId());
             }
         }
         else
@@ -42,148 +50,117 @@ public class PlayerListener implements Listener
                 @Override
                 public void run()
                 {
-                    p.sendMessage(Message.getMessage("register-required"));
+                    player.sendMessage(Message.getMessage("register-required"));
                 }
             }, 20);
         }
     }
 
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e)
+    public void onPlayerMove(PlayerMoveEvent event)
     {
-        Player p = e.getPlayer();
-        if (IPConfig.hasRegistered(p))
+        Player player = event.getPlayer();
+        if (IPConfig.hasRegistered(player))
         {
-            if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()))
+            if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()))
             {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
+                player.sendMessage(Message.getMessage("login-required-e"));
+                event.setCancelled(true);
             }
         }
         else
         {
-            p.sendMessage(Message.getMessage("register-required"));
-            e.setCancelled(true);
+            player.sendMessage(Message.getMessage("register-required"));
+            event.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void onCommandPreProcess(PlayerCommandPreprocessEvent e)
+    public void onCommandPreProcess(PlayerCommandPreprocessEvent event)
     {
-        Player p = e.getPlayer();
-        if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()) &&
-                !e.getMessage().split(" ")[0].equalsIgnoreCase("/login") &&
-                !e.getMessage().split(" ")[0].equalsIgnoreCase("/register"))
+        Player player = event.getPlayer();
+        if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()) &&
+                !event.getMessage().startsWith("/login") &&
+                !event.getMessage().startsWith("/register"))
         {
-            if (IPConfig.hasRegistered(p))
-            {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
-            }
-            else
-            {
-                p.sendMessage(Message.getMessage("register-required"));
-                e.setCancelled(true);
-            }
+            checkRegistration(player, event);
         }
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent e)
+    public void onPlayerInteract(PlayerInteractEvent event)
     {
-        Player p = e.getPlayer();
-        if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()))
+        Player player = event.getPlayer();
+        if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()))
         {
-            if (IPConfig.hasRegistered(p))
-            {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
-            }
-            else
-            {
-                p.sendMessage(Message.getMessage("register-required"));
-                e.setCancelled(true);
-            }
-            e.setCancelled(true);
+            checkRegistration(player, event);
         }
     }
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent e)
+    public void onChat(AsyncPlayerChatEvent event)
     {
-        Player p = e.getPlayer();
-        if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()))
+        Player player = event.getPlayer();
+        if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()))
         {
-            if (IPConfig.hasRegistered(p))
-            {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
-            }
-            else
-            {
-                p.sendMessage(Message.getMessage("register-required"));
-                e.setCancelled(true);
-            }
-            e.setCancelled(true);
+            checkRegistration(player, event);
         }
     }
 
     @EventHandler
-    public void onItemDrop(PlayerDropItemEvent e)
+    public void onItemDrop(PlayerDropItemEvent event)
     {
-        Player p = e.getPlayer();
-        if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()))
+        Player player = event.getPlayer();
+        if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()))
         {
-            if (IPConfig.hasRegistered(p))
-            {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
-            }
-            else
-            {
-                p.sendMessage(Message.getMessage("register-required"));
-                e.setCancelled(true);
-            }
-            e.setCancelled(true);
+            checkRegistration(player, event);
         }
     }
 
     @EventHandler
-    public void onInvClick(InventoryClickEvent e)
+    public void onInvClick(InventoryClickEvent event)
     {
-        if (!(e.getInventory().getHolder() instanceof Player)) return;
-        Player p = (Player) e.getInventory().getHolder();
-        if (!Register.getInstance().loggedInPlayers.contains(p.getUniqueId()))
+        if (!(event.getInventory().getHolder() instanceof Player))
         {
-            if (IPConfig.hasRegistered(p))
-            {
-                p.sendMessage(Message.getMessage("login-required-e"));
-                e.setCancelled(true);
-            }
-            else
-            {
-                p.sendMessage(Message.getMessage("register-required"));
-                e.setCancelled(true);
-            }
-            e.setCancelled(true);
+            return;
+        }
+        Player player = (Player) event.getInventory().getHolder();
+
+        if (!Register.getInstance().loggedInPlayers.contains(player.getUniqueId()))
+        {
+            checkRegistration(player, event);
         }
     }
 
     @EventHandler
-    public void onLeave(PlayerQuitEvent e)
+    public void onLeave(PlayerQuitEvent event)
     {
-        if (Register.getInstance().loggedInPlayers.contains(e.getPlayer().getUniqueId()))
+        if (Register.getInstance().loggedInPlayers.contains(event.getPlayer().getUniqueId()))
         {
-            Register.getInstance().loggedInPlayers.remove(e.getPlayer().getUniqueId());
+            Register.getInstance().loggedInPlayers.remove(event.getPlayer().getUniqueId());
         }
     }
 
     @EventHandler
-    public void onKick(PlayerKickEvent e)
+    public void onKick(PlayerKickEvent event)
     {
-        if (Register.getInstance().loggedInPlayers.contains(e.getPlayer().getUniqueId()))
+        if (Register.getInstance().loggedInPlayers.contains(event.getPlayer().getUniqueId()))
         {
-            Register.getInstance().loggedInPlayers.remove(e.getPlayer().getUniqueId());
+            Register.getInstance().loggedInPlayers.remove(event.getPlayer().getUniqueId());
+        }
+    }
+
+    private void checkRegistration(Player player, Cancellable event)
+    {
+        if (IPConfig.hasRegistered(player))
+        {
+            player.sendMessage(Message.getMessage("login-required-e"));
+            event.setCancelled(true);
+        }
+        else
+        {
+            player.sendMessage(Message.getMessage("register-required"));
+            event.setCancelled(true);
         }
     }
 }
