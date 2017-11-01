@@ -1,7 +1,7 @@
 # Register
 A second layer of security for your Minecraft server.
 
-##Information
+## Information
 Players will be required to register and login, and will then be required to login again every time their IP address changes.
 
 ## Installation
