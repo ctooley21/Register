@@ -1,0 +1,11 @@
+name: Register
+version: 1.0
+author: Dapkin
+main: com.andrewtooley.register.Register
+commands:
+  register:
+    description: Register
+    usage: /register <password> <password>
+  login:
+    description: Login
+    usage: /login <password>
