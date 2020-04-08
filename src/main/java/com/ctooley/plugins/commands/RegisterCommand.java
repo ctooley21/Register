@@ -1,8 +1,8 @@
-package com.andrewtooley.register.Commands;
+package com.ctooley.plugins.commands;
 
-import com.andrewtooley.register.Register;
-import com.andrewtooley.register.Util.IPConfig;
-import com.andrewtooley.register.Util.Message;
+import com.ctooley.plugins.Register;
+import com.ctooley.plugins.util.IPConfig;
+import com.ctooley.plugins.util.Message;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

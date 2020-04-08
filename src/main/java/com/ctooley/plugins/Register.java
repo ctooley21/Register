@@ -1,9 +1,9 @@
-package com.andrewtooley.register;
+package com.ctooley.plugins;
 
-import com.andrewtooley.register.Commands.LoginCommand;
-import com.andrewtooley.register.Commands.RegisterCommand;
-import com.andrewtooley.register.Listeners.PlayerListener;
-import com.andrewtooley.register.Util.IPConfig;
+import com.ctooley.plugins.commands.LoginCommand;
+import com.ctooley.plugins.commands.RegisterCommand;
+import com.ctooley.plugins.listeners.PlayerListener;
+import com.ctooley.plugins.util.IPConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -1,6 +1,6 @@
-package com.andrewtooley.register.Util;
+package com.ctooley.plugins.util;
 
-import com.andrewtooley.register.Register;
+import com.ctooley.plugins.Register;
 import org.bukkit.ChatColor;
 
 public class Message
